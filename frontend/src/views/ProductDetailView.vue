@@ -34,7 +34,7 @@
         </div>
 
         <div class="price-block">
-          <span class="price-main text-primary-gradient">{{ product?.price.toFixed(2) }} PLN</span>
+          <span class="price-main text-primary-gradient">{{ Number(product?.price ?? 0).toFixed(2) }} PLN</span>
           <span class="price-note">W tym 23% VAT. Możliwość zakupu na raty 0%.</span>
         </div>
 

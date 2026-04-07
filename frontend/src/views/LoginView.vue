@@ -4,19 +4,19 @@
       <div class="auth-box glass-heavy">
         <div class="auth-header">
           <Avatar icon="pi pi-lock" size="xlarge" shape="circle" class="auth-avatar" />
-          <h1 class="text-gradient">Witaj ponownie</h1>
-          <p class="auth-sub">Zaloguj się do swojego panelu zdrowia.</p>
+          <h1 class="text-gradient">{{ $t('auth.loginTitle') }}</h1>
+          <p class="auth-sub">{{ $t('auth.loginSub') }}</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="auth-form">
           <FloatLabel>
             <InputText id="loginEmail" v-model="email" type="email" required class="w-full" />
-            <label for="loginEmail">Adres E-mail</label>
+            <label for="loginEmail">{{ $t('auth.emailLabel') }}</label>
           </FloatLabel>
 
           <FloatLabel>
             <Password id="loginPass" v-model="password" required toggleMask :feedback="false" class="w-full" inputClass="w-full" />
-            <label for="loginPass">Hasło dostępu</label>
+            <label for="loginPass">{{ $t('auth.passLabel') }}</label>
           </FloatLabel>
 
           <Message v-if="authStore.error" severity="error" :closable="false" class="auth-error">
@@ -25,17 +25,17 @@
 
           <Button
             type="submit"
-            :label="authStore.loading ? 'Autoryzacja...' : 'Zaloguj się bezpiecznie'"
+            :label="authStore.loading ? $t('auth.loggingIn') : $t('auth.loginBtn')"
             :icon="authStore.loading ? 'pi pi-spin pi-spinner' : 'pi pi-sign-in'"
             :disabled="authStore.loading"
             class="w-full"
           />
         </form>
 
-        <Divider align="center"><small class="divider-text">lub</small></Divider>
+        <Divider align="center"><small class="divider-text">{{ $t('auth.or') }}</small></Divider>
 
         <footer class="auth-footer">
-          <p>Nie masz jeszcze konta? <router-link to="/rejestracja" class="text-primary-gradient link-bold">Zarejestruj się</router-link></p>
+          <p>{{ $t('auth.noAccount') }} <router-link to="/rejestracja" class="text-primary-gradient link-bold">{{ $t('auth.registerLink') }}</router-link></p>
         </footer>
       </div>
     </div>

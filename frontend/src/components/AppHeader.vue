@@ -36,6 +36,26 @@
 
       <!-- Actions -->
       <div class="header-actions anim-fadeInUp" style="animation-delay: 0.5s">
+        <!-- Language Switcher -->
+        <Select
+          v-model="langStore.currentLang"
+          :options="langStore.supportedLocales"
+          optionLabel="label"
+          optionValue="code"
+          class="lang-select"
+        >
+          <template #value="slotProps">
+            <span v-if="slotProps.value" class="lang-flag-label">
+              {{ langStore.supportedLocales.find(l => l.code === slotProps.value)?.flag }} {{ slotProps.value.toUpperCase() }}
+            </span>
+          </template>
+          <template #option="slotProps">
+            <span class="lang-flag-label">
+              {{ slotProps.option.flag }} {{ slotProps.option.label }}
+            </span>
+          </template>
+        </Select>
+
         <template v-if="authStore.isAuthenticated">
           <div class="user-pill glass" @click="toggleUserMenu">
             <span class="user-name">{{ authStore.user?.full_name?.split(' ')[0] }}</span>
@@ -45,10 +65,10 @@
         </template>
         <template v-else>
           <router-link to="/logowanie">
-            <Button label="Logowanie" severity="secondary" size="small" outlined />
+            <Button :label="t('nav.login')" severity="secondary" size="small" outlined />
           </router-link>
           <router-link to="/rejestracja">
-            <Button label="Dołącz" severity="primary" size="small" />
+            <Button :label="t('nav.join')" severity="primary" size="small" />
           </router-link>
         </template>
 
@@ -63,28 +83,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Badge from 'primevue/badge'
 import Avatar from 'primevue/avatar'
 import Menu from 'primevue/menu'
+import Select from 'primevue/select'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
+import { useLangStore } from '../stores/lang'
 
 const cartStore = useCartStore()
 const authStore = useAuthStore()
+const langStore = useLangStore()
+const { t } = useI18n()
+
 const isScrolled = ref(false)
 const userMenu = ref()
 
-const navLinks = [
-  { path: '/', label: 'Start' },
-  { path: '/produkty', label: 'E-Sklep' },
-  { path: '/kontakt', label: 'Pomoc' }
-]
+const navLinks = computed(() => [
+  { path: '/', label: t('nav.home') },
+  { path: '/produkty', label: t('nav.shop') },
+  { path: '/kontakt', label: t('nav.help') }
+])
 
-const userMenuItems = ref([
+const userMenuItems = computed(() => [
   {
-    label: 'Panel',
+    label: t('nav.panel'),
     icon: 'pi pi-user',
     command: () => {
       if (authStore.isAdmin) window.location.href = '/admin'
@@ -94,7 +120,7 @@ const userMenuItems = ref([
   },
   { separator: true },
   {
-    label: 'Wyloguj',
+    label: t('nav.logout'),
     icon: 'pi pi-sign-out',
     command: () => authStore.logout()
   }
@@ -215,6 +241,18 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 .user-name {
   font-weight: 600;
   font-size: 0.875rem;
+}
+
+.lang-select :deep(.p-select-label) {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.lang-flag-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @media (max-width: 768px) {

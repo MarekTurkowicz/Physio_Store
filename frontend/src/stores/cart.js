@@ -25,7 +25,7 @@ export const useCartStore = defineStore('cart', () => {
    * @type {import('vue').ComputedRef<number>}
    */
   const totalPrice = computed(() =>
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    items.value.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
   )
 
   /**

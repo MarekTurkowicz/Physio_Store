@@ -13,6 +13,7 @@ import { useAuthStore } from './stores/auth'
 
 import 'primeicons/primeicons.css'
 import './assets/main.css'
+import i18n from './i18n'
 
 /* ── PhysioStore custom preset (Aura-based, dark-first) ── */
 const PhysioPreset = definePreset(Aura, {
@@ -56,6 +57,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(i18n)
 app.use(PrimeVue, {
   theme: {
     preset: PhysioPreset,

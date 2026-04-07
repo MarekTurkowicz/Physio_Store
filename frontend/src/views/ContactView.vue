@@ -1,11 +1,10 @@
 <template>
   <div class="page-content container anim-fadeInUp">
     <header class="contact-header">
-      <Tag value="Centrum Pomocy" severity="success" rounded />
-      <h1 class="text-gradient">Skontaktuj się z ekspertem</h1>
+      <Tag :value="$t('contact.tag')" severity="success" rounded />
+      <h1 class="text-gradient">{{ $t('contact.title') }}</h1>
       <p class="contact-desc">
-        Potrzebujesz porady przy wyborze sprzętu? Nasz zespół fizjoterapeutów jest
-        dostępny od poniedziałku do piątku w godzinach 8:00 - 18:00.
+        {{ $t('contact.subtitle') }}
       </p>
     </header>
 
@@ -24,25 +23,25 @@
     <div class="contact-form-section glass anim-fadeInUp anim-delay-2">
       <div class="form-layout">
         <div class="form-side">
-          <h2 class="text-gradient">Szybka wiadomość</h2>
+          <h2 class="text-gradient">{{ $t('contact.formTitle') }}</h2>
           <form @submit.prevent="handleSubmit" class="contact-form">
             <div class="form-row">
               <FloatLabel>
                 <InputText id="cName" v-model="formData.name" required class="w-full" />
-                <label for="cName">Imię</label>
+                <label for="cName">{{ $t('contact.name') }}</label>
               </FloatLabel>
               <FloatLabel>
                 <InputText id="cEmail" v-model="formData.email" type="email" required class="w-full" />
-                <label for="cEmail">E-mail</label>
+                <label for="cEmail">{{ $t('contact.email') }}</label>
               </FloatLabel>
             </div>
             <FloatLabel>
               <Textarea id="cMessage" v-model="formData.message" rows="5" required class="w-full" />
-              <label for="cMessage">Wiadomość</label>
+              <label for="cMessage">{{ $t('contact.message') }}</label>
             </FloatLabel>
             <Button
               type="submit"
-              :label="sent ? 'Wiadomość wysłana ✓' : 'Wyślij wiadomość'"
+              :label="sent ? $t('contact.sent') : $t('contact.send')"
               :icon="sent ? 'pi pi-check' : 'pi pi-send'"
               :disabled="sent"
               :severity="sent ? 'success' : 'primary'"
@@ -53,9 +52,9 @@
 
         <div class="map-side glass-heavy">
           <i class="pi pi-map-marker map-icon"></i>
-          <h4>Siedziba główna</h4>
+          <h4>{{ $t('contact.hq') }}</h4>
           <p class="map-address">ul. Rehabilitacyjna 12<br />00-950 Warszawa</p>
-          <Tag value="Placeholder Mapy" severity="info" rounded />
+          <Tag value="Map Placeholder" severity="info" rounded />
         </div>
       </div>
     </div>
@@ -63,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -71,20 +70,22 @@ import FloatLabel from 'primevue/floatlabel'
 import Textarea from 'primevue/textarea'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 
 const toast = useToast()
+const { t } = useI18n()
 const sent = ref(false)
 const formData = reactive({ name: '', email: '', message: '' })
 
-const contactCards = [
-  { icon: '📧', title: 'Dział Sprzedaży', desc: 'Zamówienia hurtowe i pytania o dostępność.', href: 'mailto:sklep@physiostore.pl', linkText: 'sklep@physiostore.pl' },
-  { icon: '🎧', title: 'Wsparcie Techniczne', desc: 'Pytania o parametry urządzeń i instrukcje.', href: 'mailto:wsparcie@physiostore.pl', linkText: 'wsparcie@physiostore.pl' },
-  { icon: '📞', title: 'Infolinia', desc: 'Pon-Pt: 8:00 - 18:00', href: 'tel:+48123456789', linkText: '+48 123 456 789' }
-]
+const contactCards = computed(() => [
+  { icon: '📧', title: t('contact.sales'), desc: t('contact.salesDesc'), href: 'mailto:sklep@physiostore.pl', linkText: 'sklep@physiostore.pl' },
+  { icon: '🎧', title: t('contact.support'), desc: t('contact.supportDesc'), href: 'mailto:wsparcie@physiostore.pl', linkText: 'wsparcie@physiostore.pl' },
+  { icon: '📞', title: t('contact.hotline'), desc: t('contact.hotlineDesc'), href: 'tel:+48123456789', linkText: '+48 123 456 789' }
+])
 
 const handleSubmit = () => {
   sent.value = true
-  toast.add({ severity: 'success', summary: 'Wysłano!', detail: 'Odpowiemy w ciągu 24h.', life: 4000 })
+  toast.add({ severity: 'success', summary: t('contact.sentToast'), detail: t('contact.sentDetail'), life: 4000 })
 }
 </script>
 

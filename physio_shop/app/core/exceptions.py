@@ -46,3 +46,8 @@ class InsufficientStockException(BadRequestException):
             message=f"Niewystarczający stan magazynowy: {product_name}",
             detail=f"Dostępne: {available}, zamówione: {requested}",
         )
+
+
+class TooManyRequestsException(AppException):
+    """Rate limit exceeded (maps to 429)."""
+    pass

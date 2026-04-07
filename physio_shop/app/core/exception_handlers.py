@@ -11,6 +11,7 @@ from app.core.exceptions import (
     BadRequestException,
     ForbiddenException,
     NotFoundException,
+    TooManyRequestsException,
     UnauthorizedException,
 )
 
@@ -35,6 +36,10 @@ async def bad_request_handler(request: Request, exc: BadRequestException) -> JSO
     return JSONResponse(status_code=400, content={"message": exc.message, "detail": exc.detail})
 
 
+async def too_many_requests_handler(request: Request, exc: TooManyRequestsException) -> JSONResponse:
+    return JSONResponse(status_code=429, content={"message": exc.message, "detail": exc.detail})
+
+
 def register_exception_handlers(app) -> None:
     """Register all custom exception handlers on the FastAPI app."""
     app.add_exception_handler(NotFoundException, not_found_handler)
@@ -42,3 +47,4 @@ def register_exception_handlers(app) -> None:
     app.add_exception_handler(UnauthorizedException, unauthorized_handler)
     app.add_exception_handler(ForbiddenException, forbidden_handler)
     app.add_exception_handler(BadRequestException, bad_request_handler)
+    app.add_exception_handler(TooManyRequestsException, too_many_requests_handler)

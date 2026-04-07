@@ -5,6 +5,7 @@ This module provides functions for secure password storage using bcrypt and
 token-based authentication using JSON Web Tokens (JWT).
 """
 
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -18,12 +19,6 @@ settings = get_settings()
 def hash_password(password: str) -> str:
     """
     Hashes a plain-text password using the bcrypt algorithm with a random salt.
-
-    Args:
-        password (str): The plain-text password to hash.
-
-    Returns:
-        str: The resulting salt-prefixed bcrypt hash as a UTF-8 string.
     """
     pwd_bytes = password.encode("utf-8")
     salt = bcrypt.gensalt()
@@ -33,13 +28,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verifies a plain-text password against a stored bcrypt hash.
-
-    Args:
-        plain_password (str): The password attempt in plain-text.
-        hashed_password (str): The correct password's stored bcrypt hash.
-
-    Returns:
-        bool: True if the password matches the hash, False otherwise.
     """
     pwd_bytes = plain_password.encode("utf-8")
     hash_bytes = hashed_password.encode("utf-8")
@@ -48,37 +36,37 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
-    Generates a signed JWT access token for a user session.
-
-    Args:
-        data (dict): Payload data to include in the token (e.g., {"sub": user_email}).
-        expires_delta (timedelta, optional): Custom expiration duration.
-            Defaults to settings.ACCESS_TOKEN_EXPIRE_MINUTES.
-
-    Returns:
-        str: Encoded and signed JWT string.
+    Generates a signed JWT access token with a unique jti claim.
+    The jti (JWT ID) allows individual tokens to be blacklisted on logout.
     """
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "jti": str(uuid.uuid4()),  # unique token ID for blacklisting
+    })
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def decode_access_token(token: str) -> dict | None:
     """
     Decodes and validates a JWT access token.
-
-    Args:
-        token (str): The encoded JWT string to verify.
-
-    Returns:
-        dict | None: The decoded payload dictionary if valid and not expired,
-            otherwise None.
+    Returns the payload dict (including jti) if valid, otherwise None.
     """
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except JWTError:
         return None
+
+
+def get_token_ttl(payload: dict) -> int:
+    """
+    Returns remaining seconds until token expiry.
+    Used to set TTL when blacklisting a token.
+    """
+    exp = payload.get("exp", 0)
+    remaining = int(exp - datetime.now(timezone.utc).timestamp())
+    return max(remaining, 0)

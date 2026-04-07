@@ -7,36 +7,35 @@
 
       <div class="container hero-inner">
         <div class="hero-content anim-fadeInUp">
-          <Tag value="Profesjonalny sprzęt fizjo" severity="success" rounded class="hero-tag" />
+          <Tag :value="$t('home.tag')" severity="success" rounded class="hero-tag" />
 
           <h1 class="hero-title text-gradient">
-            Ekspercka opieka
+            {{ $t('home.title') }}
             <br />
-            <span class="text-primary-gradient">w Twoim domu</span>
+            <span class="text-primary-gradient">{{ $t('home.titleAccent') }}</span>
           </h1>
 
           <p class="hero-subtitle">
-            Zapewnij sobie najwyższej klasy sprzęt rehabilitacyjny rekomendowany
-            przez czołowych fizjoterapeutów w Polsce.
+            {{ $t('home.subtitle') }}
           </p>
 
           <div class="hero-actions">
             <router-link to="/produkty">
-              <Button label="Zacznij zakupy" icon="pi pi-shopping-bag" size="large" />
+              <Button :label="$t('home.cta')" icon="pi pi-shopping-bag" size="large" />
             </router-link>
             <router-link to="/kontakt">
-              <Button label="Umów konsultację" icon="pi pi-phone" severity="secondary" size="large" outlined />
+              <Button :label="$t('home.ctaSecondary')" icon="pi pi-phone" severity="secondary" size="large" outlined />
             </router-link>
           </div>
 
           <div class="hero-stats anim-fadeInUp anim-delay-3">
             <div class="stat-card glass">
-              <span class="stat-val">12k+</span>
-              <span class="stat-lbl">Zaufanych klientów</span>
+              <span class="stat-val">{{ $t('home.stat1val') }}</span>
+              <span class="stat-lbl">{{ $t('home.stat1lbl') }}</span>
             </div>
             <div class="stat-card glass">
-              <span class="stat-val">24h</span>
-              <span class="stat-lbl">Czas dostawy</span>
+              <span class="stat-val">{{ $t('home.stat2val') }}</span>
+              <span class="stat-lbl">{{ $t('home.stat2lbl') }}</span>
             </div>
           </div>
         </div>
@@ -44,11 +43,11 @@
         <div class="hero-visual anim-fadeInUp anim-delay-2">
           <div class="hero-card glass-heavy anim-float anim-glow">
             <div class="card-inner-blur"></div>
-            <Tag value="Bestseller" severity="warn" class="bestseller-tag" />
+            <Tag :value="$t('home.bestseller')" severity="warn" class="bestseller-tag" />
             <div class="product-visual skeleton"></div>
             <div class="hero-card-info">
-              <h3>Indywidualne plany ćwiczeń</h3>
-              <p class="hero-card-desc">Dołączone do każdego zakupu powyżej 200 PLN.</p>
+              <h3>{{ $t('home.heroCardTitle') }}</h3>
+              <p class="hero-card-desc">{{ $t('home.heroCardDesc') }}</p>
             </div>
           </div>
         </div>
@@ -58,8 +57,8 @@
     <!-- Features Section -->
     <section class="container features-section anim-fadeInUp">
       <div class="features-header">
-        <h2 class="text-gradient">Dlaczego PhysioStore?</h2>
-        <p class="features-sub">Standard medyczny dostępny dla każdego.</p>
+        <h2 class="text-gradient">{{ $t('home.whyTitle') }}</h2>
+        <p class="features-sub">{{ $t('home.whySub') }}</p>
       </div>
       <div class="feature-grid">
         <Card v-for="feature in features" :key="feature.title" class="feature-card">
@@ -75,15 +74,19 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Card from 'primevue/card'
 
-const features = [
-  { icon: '🛡️', title: 'Gwarancja jakości', desc: 'Wszystkie produkty posiadają atest medyczny CE.' },
-  { icon: '🚚', title: 'Dostawa 24/7', desc: 'Darmowa wysyłka dla zamówień powyżej 150 PLN.' },
-  { icon: '💎', title: 'Program Premium', desc: 'Punkty lojalnościowe za każdy zakupiony zestaw.' }
-]
+const { t } = useI18n()
+
+const features = computed(() => [
+  { icon: '🛡️', title: t('home.feat1title'), desc: t('home.feat1desc') },
+  { icon: '🚚', title: t('home.feat2title'), desc: t('home.feat2desc') },
+  { icon: '💎', title: t('home.feat3title'), desc: t('home.feat3desc') }
+])
 </script>
 
 <style scoped>

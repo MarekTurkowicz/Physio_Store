@@ -1,7 +1,9 @@
 name: fizjo-store
-version: '3.8'
 
 services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
   db:
     image: postgres:16-alpine
     container_name: physio_db
@@ -14,9 +16,40 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: physio_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: physio_mailhog
+    restart: always
+    ports:
+      - "1025:1025"   # SMTP — used by Celery email tasks
+      - "8025:8025"   # Web UI — view sent emails at http://localhost:8025
+    logging:
+      driver: none    # suppress MailHog's verbose output
+
+  # ── Application ─────────────────────────────────────────────────────────────
 
   backend:
-    build: 
+    build:
       context: ./physio_shop
       dockerfile: Dockerfile
     container_name: physio_backend
@@ -25,8 +58,61 @@ services:
       - "8001:8080"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/physioshop
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    build:
+      context: ./physio_shop
+      dockerfile: Dockerfile
+    container_name: physio_celery_worker
+    restart: always
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4 -E
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/physioshop
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build:
+      context: ./physio_shop
+      dockerfile: Dockerfile
+    container_name: physio_celery_beat
+    restart: always
+    command: celery -A app.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/physioshop
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  flower:
+    build:
+      context: ./physio_shop
+      dockerfile: Dockerfile
+    container_name: physio_flower
+    restart: always
+    command: celery -A app.celery_app flower --port=5555
+    ports:
+      - "5555:5555"   # Flower dashboard at http://localhost:5555
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
 
   frontend:
     image: node:20-alpine
@@ -42,3 +128,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

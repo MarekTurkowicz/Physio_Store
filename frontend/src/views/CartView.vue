@@ -3,13 +3,13 @@
     <div class="cart-layout">
       <!-- Items List -->
       <div class="cart-main glass-heavy">
-        <h1 class="text-gradient">Twój Koszyk</h1>
+        <h1 class="text-gradient">{{ $t('cart.title') }}</h1>
 
         <div v-if="cartStore.items.length === 0" class="empty-cart">
           <i class="pi pi-shopping-cart empty-icon"></i>
-          <p class="empty-text">Twój koszyk świeci pustkami.</p>
+          <p class="empty-text">{{ $t('cart.empty') }}</p>
           <router-link to="/produkty">
-            <Button label="Przeglądaj sklep" icon="pi pi-shopping-bag" />
+            <Button :label="$t('cart.browse')" icon="pi pi-shopping-bag" />
           </router-link>
         </div>
 
@@ -50,28 +50,28 @@
       <!-- Summary Sidebar -->
       <aside v-if="cartStore.items.length > 0" class="cart-summary anim-fadeInUp anim-delay-1">
         <div class="summary-card glass-heavy">
-          <h3 class="summary-title">Podsumowanie</h3>
+          <h3 class="summary-title">{{ $t('cart.summary') }}</h3>
 
           <div class="summary-row">
-            <span>Suma częściowa:</span>
+            <span>{{ $t('cart.subtotal') }}</span>
             <span>{{ cartStore.totalPrice.toFixed(2) }} PLN</span>
           </div>
           <div class="summary-row">
-            <span>Dostawa:</span>
-            <span class="free-delivery">Darmowa</span>
+            <span>{{ $t('cart.shipping') }}</span>
+            <span class="free-delivery">{{ $t('cart.free') }}</span>
           </div>
 
           <Divider />
 
           <div class="total-row">
-            <span>Do zapłaty:</span>
+            <span>{{ $t('cart.total') }}</span>
             <span class="text-primary-gradient">{{ cartStore.totalPrice.toFixed(2) }} PLN</span>
           </div>
 
           <router-link to="/zamowienie" class="checkout-link">
-            <Button label="Kasa i Wysyłka" icon="pi pi-arrow-right" iconPos="right" class="checkout-btn" />
+            <Button :label="$t('cart.checkout')" icon="pi pi-arrow-right" iconPos="right" class="checkout-btn" />
           </router-link>
-          <p class="ssl-note">🔒 Gwarantujemy bezpieczne zakupy SSL.</p>
+          <p class="ssl-note">🔒 {{ $t('cart.ssl') }}</p>
         </div>
       </aside>
     </div>

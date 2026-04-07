@@ -4,39 +4,39 @@
       <div class="auth-box glass-heavy">
         <div class="auth-header">
           <Avatar icon="pi pi-user-plus" size="xlarge" shape="circle" class="auth-avatar" />
-          <h1 class="text-gradient">Dołącz do nas</h1>
-          <p class="auth-sub">Zatroszcz się o swoje zdrowie już dziś.</p>
+          <h1 class="text-gradient">{{ $t('auth.registerTitle') }}</h1>
+          <p class="auth-sub">{{ $t('auth.registerSub') }}</p>
         </div>
 
         <form @submit.prevent="handleRegister" class="auth-form">
           <FloatLabel>
             <InputText id="regName" v-model="form.full_name" required class="w-full" />
-            <label for="regName">Imię i Nazwisko</label>
+            <label for="regName">{{ $t('auth.nameLabel') }}</label>
           </FloatLabel>
           <FloatLabel>
             <InputText id="regEmail" v-model="form.email" type="email" required class="w-full" />
-            <label for="regEmail">Adres E-mail</label>
+            <label for="regEmail">{{ $t('auth.emailLabel') }}</label>
           </FloatLabel>
           <FloatLabel>
             <Password id="regPass" v-model="form.password" required toggleMask class="w-full" inputClass="w-full" />
-            <label for="regPass">Hasło (min. 8 znaków)</label>
+            <label for="regPass">{{ $t('auth.passRegLabel') }}</label>
           </FloatLabel>
 
           <Message v-if="authStore.error" severity="error" :closable="false">{{ authStore.error }}</Message>
 
           <Button
             type="submit"
-            :label="authStore.loading ? 'Tworzenie konta...' : 'Zarejestruj się teraz'"
+            :label="authStore.loading ? $t('auth.registering') : $t('auth.registerBtn')"
             :icon="authStore.loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
             :disabled="authStore.loading"
             class="w-full"
           />
         </form>
 
-        <Divider align="center"><small class="divider-text">lub</small></Divider>
+        <Divider align="center"><small class="divider-text">{{ $t('auth.or') }}</small></Divider>
 
         <footer class="auth-footer">
-          <p>Masz już konto? <router-link to="/logowanie" class="text-primary-gradient link-bold">Zaloguj się</router-link></p>
+          <p>{{ $t('auth.hasAccount') }} <router-link to="/logowanie" class="text-primary-gradient link-bold">{{ $t('auth.loginLink') }}</router-link></p>
         </footer>
       </div>
     </div>

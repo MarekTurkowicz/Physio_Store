@@ -12,34 +12,34 @@
             <!-- Step 1: Shipping -->
             <StepPanel v-slot="{ activateCallback }" :value="1">
               <div class="step-content glass-heavy">
-                <h2 class="text-gradient">Dane do wysyłki</h2>
+                <h2 class="text-gradient">{{ $t('checkout.shippingTitle') }}</h2>
                 <form @submit.prevent="activateCallback(2)" class="shipping-form">
                   <div class="form-row">
                     <FloatLabel>
                       <InputText id="fullName" v-model="form.fullName" required class="w-full" />
-                      <label for="fullName">Imię i Nazwisko</label>
+                      <label for="fullName">{{ $t('checkout.fullName') }}</label>
                     </FloatLabel>
                     <FloatLabel>
                       <InputText id="phone" v-model="form.phone" required class="w-full" />
-                      <label for="phone">Telefon</label>
+                      <label for="phone">{{ $t('checkout.phone') }}</label>
                     </FloatLabel>
                   </div>
                   <FloatLabel class="full-width">
                     <InputText id="address" v-model="form.address" required class="w-full" />
-                    <label for="address">Adres i numer domu</label>
+                    <label for="address">{{ $t('checkout.address') }}</label>
                   </FloatLabel>
                   <div class="form-row">
                     <FloatLabel>
                       <InputText id="zip" v-model="form.zip" required class="w-full" />
-                      <label for="zip">Kod pocztowy</label>
+                      <label for="zip">{{ $t('checkout.zip') }}</label>
                     </FloatLabel>
                     <FloatLabel>
                       <InputText id="city" v-model="form.city" required class="w-full" />
-                      <label for="city">Miasto</label>
+                      <label for="city">{{ $t('checkout.city') }}</label>
                     </FloatLabel>
                   </div>
                   <div class="step-actions">
-                    <Button type="submit" label="Kontynuuj do płatności" icon="pi pi-arrow-right" iconPos="right" />
+                    <Button type="submit" :label="$t('checkout.continue')" icon="pi pi-arrow-right" iconPos="right" />
                   </div>
                 </form>
               </div>
@@ -48,7 +48,7 @@
             <!-- Step 2: Payment -->
             <StepPanel v-slot="{ activateCallback }" :value="2">
               <div class="step-content glass-heavy">
-                <h2 class="text-gradient">Metoda płatności</h2>
+                <h2 class="text-gradient">{{ $t('checkout.paymentTitle') }}</h2>
                 <div class="payment-options">
                   <div
                     v-for="p in paymentMethods"
@@ -66,8 +66,8 @@
                   </div>
                 </div>
                 <div class="step-actions between">
-                  <Button @click="activateCallback(1)" label="Wstecz" severity="secondary" icon="pi pi-arrow-left" />
-                  <Button @click="activateCallback(3)" label="Podsumowanie" icon="pi pi-check" />
+                  <Button @click="activateCallback(1)" :label="$t('checkout.back')" severity="secondary" icon="pi pi-arrow-left" />
+                  <Button @click="activateCallback(3)" :label="$t('checkout.summaryBtn')" icon="pi pi-check" />
                 </div>
               </div>
             </StepPanel>
@@ -76,10 +76,10 @@
             <StepPanel :value="3">
               <div class="step-content glass-heavy success-step anim-fadeInUp">
                 <div class="success-icon">🎉</div>
-                <h2 class="text-gradient">Zamówienie złożone!</h2>
-                <p class="success-desc">Twoje zamówienie <strong>#ORD-2026-001</strong> jest w drodze.</p>
+                <h2 class="text-gradient">{{ $t('checkout.successTitle') }}</h2>
+                <p class="success-desc">{{ $t('checkout.successDesc') }}</p>
                 <router-link to="/produkty">
-                  <Button label="Wróć do sklepu" icon="pi pi-shopping-bag" class="back-btn" />
+                  <Button :label="$t('checkout.backToShop')" icon="pi pi-shopping-bag" class="back-btn" />
                 </router-link>
               </div>
             </StepPanel>
@@ -90,7 +90,7 @@
       <!-- Summary Sidebar -->
       <aside v-if="currentStep < 3" class="checkout-summary anim-fadeInUp anim-delay-2">
         <div class="summary-card glass-heavy">
-          <h3 class="summary-title">Twoje podsumowanie</h3>
+          <h3 class="summary-title">{{ $t('checkout.orderSummary') }}</h3>
           <div class="summary-list">
             <div v-for="item in cartStore.items" :key="item.id" class="summary-item">
               <span class="item-qty-name"><Tag :value="item.quantity + 'x'" severity="success" /> {{ item.name }}</span>
@@ -99,10 +99,10 @@
           </div>
           <Divider />
           <div class="total-row">
-            <span>Razem:</span>
+            <span>{{ $t('checkout.totalLabel') }}</span>
             <span class="text-primary-gradient">{{ cartStore.totalPrice.toFixed(2) }} PLN</span>
           </div>
-          <p class="tax-note">Wszystkie podatki zawarte w cenie.</p>
+          <p class="tax-note">{{ $t('checkout.taxNote') }}</p>
         </div>
       </aside>
     </div>
@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import FloatLabel from 'primevue/floatlabel'
@@ -123,21 +123,23 @@ import Step from 'primevue/step'
 import StepPanels from 'primevue/steppanels'
 import StepPanel from 'primevue/steppanel'
 import { useCartStore } from '../stores/cart'
+import { useI18n } from 'vue-i18n'
 
 const cartStore = useCartStore()
+const { t } = useI18n()
 const currentStep = ref(1)
 
-const steps = [
-  { id: 1, label: 'Wysyłka' },
-  { id: 2, label: 'Płatność' },
-  { id: 3, label: 'Gotowe' }
-]
+const steps = computed(() => [
+  { id: 1, label: t('checkout.step1') },
+  { id: 2, label: t('checkout.step2') },
+  { id: 3, label: t('checkout.step3') }
+])
 
-const paymentMethods = [
-  { id: 'blik', name: 'BLIK', icon: '📱', desc: 'Szybki przelew na telefon.' },
-  { id: 'card', name: 'Karta Płatnicza', icon: '💳', desc: 'Stripe, Visa, MasterCard.' },
-  { id: 'transfer', name: 'Przelew tradycyjny', icon: '🏦', desc: 'Zaksięgowanie w 24h.' }
-]
+const paymentMethods = computed(() => [
+  { id: 'blik', name: t('checkout.blik'), icon: '📱', desc: t('checkout.blikDesc') },
+  { id: 'card', name: t('checkout.card'), icon: '💳', desc: t('checkout.cardDesc') },
+  { id: 'transfer', name: t('checkout.transfer'), icon: '🏦', desc: t('checkout.transferDesc') }
+])
 
 const form = reactive({
   fullName: '',

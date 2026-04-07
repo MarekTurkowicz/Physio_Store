@@ -9,19 +9,19 @@
     <div class="product-body">
       <h3 class="product-name">{{ product.name }}</h3>
       <div class="price-row">
-        <span class="price-val">{{ (product.price ?? 0).toFixed(2) }} PLN</span>
+        <span class="price-val">{{ (Number(product.price) || 0).toFixed(2) }} PLN</span>
         <div class="rating-row">
           <Rating :modelValue="Math.round(product.rating || 5)" :readonly="true" :cancel="false" :stars="5" />
         </div>
       </div>
 
       <p class="product-desc">
-        {{ product.description || 'Specjalistyczny sprzęt do rehabilitacji domowej o wysokiej trwałości.' }}
+        {{ product.description || $t('products.defaultDesc') }}
       </p>
 
       <Button
         @click="addToCart"
-        label="Dodaj do koszyka"
+        :label="$t('products.addToCart')"
         icon="pi pi-shopping-bag"
         severity="primary"
         size="small"
@@ -38,6 +38,7 @@ import Tag from 'primevue/tag'
 import Rating from 'primevue/rating'
 import { useCartStore } from '../stores/cart'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   product: { type: Object, required: true }
@@ -45,6 +46,7 @@ const props = defineProps({
 
 const cartStore = useCartStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const categoryName = computed(() => {
   const cat = props.product.category
@@ -61,7 +63,7 @@ const addToCart = () => {
   })
   toast.add({
     severity: 'success',
-    summary: 'Dodano do koszyka',
+    summary: t('products.addedToast'),
     detail: props.product.name,
     life: 2500
   })

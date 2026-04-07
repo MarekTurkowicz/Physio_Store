@@ -20,12 +20,11 @@ from app.schemas.order import (
     OrderStatusUpdate,
 )
 
-
 # Valid status transitions to enforce workflow
 VALID_TRANSITIONS = {
-    "pending": ["confirmed", "cancelled"],
+    "pending":   ["confirmed", "cancelled"],
     "confirmed": ["shipped", "cancelled"],
-    "shipped": ["delivered"],
+    "shipped":   ["delivered"],
     "delivered": [],
     "cancelled": [],
 }
@@ -41,9 +40,14 @@ class OrderService:
         """
         Place a new order.
         Validates stock, calculates totals, decrements inventory.
+
+        After successful persistence fires two background tasks:
+        - send_order_confirmation  → confirmation email to the customer
+        - check_low_stock_after_order → alert managers if any product stock is low
         """
         items_data = []
         total_amount = Decimal("0.00")
+        product_ids = []
 
         for item in data.items:
             product = await self.product_repo.get_by_id(item.product_id)
@@ -64,6 +68,7 @@ class OrderService:
 
             line_total = product.price * item.quantity
             total_amount += line_total
+            product_ids.append(product.id)
 
             items_data.append({
                 "product_id": product.id,
@@ -82,7 +87,32 @@ class OrderService:
             total_amount=total_amount,
             items_data=items_data,
         )
-        return OrderResponse.model_validate(order)
+        response = OrderResponse.model_validate(order)
+
+        # ── Background tasks ──────────────────────────────────────────────────
+        from app.tasks.email_tasks import send_order_confirmation
+        from app.tasks.stock_tasks import check_low_stock_after_order
+
+        send_order_confirmation.delay(
+            order_id=order.id,
+            user_email=user.email,
+            user_name=user.full_name,
+            total=str(total_amount),
+            items=[
+                {
+                    "name": d.get("name", f"Produkt #{d['product_id']}"),
+                    "quantity": d["quantity"],
+                    "unit_price": str(d["unit_price"]),
+                }
+                for d in items_data
+            ],
+            shipping_address=data.shipping_address,
+        )
+
+        check_low_stock_after_order.delay(product_ids=product_ids)
+        # ─────────────────────────────────────────────────────────────────────
+
+        return response
 
     async def get_order(self, order_id: int, user: User) -> OrderResponse:
         """Get order details. Users can only see their own orders."""
@@ -115,9 +145,10 @@ class OrderService:
         self, order_id: int, data: OrderStatusUpdate
     ) -> OrderResponse:
         """
-        Update order status (admin only).
-        Enforces valid status transitions.
-        If cancelled, restores stock.
+        Update order status (manager only).
+        Enforces valid status transitions. Restores stock on cancellation.
+
+        Fires send_order_status_update task to notify the customer.
         """
         order = await self.order_repo.get_by_id(order_id)
         if not order:
@@ -140,8 +171,25 @@ class OrderService:
                         stock_quantity=product.stock_quantity + item.quantity,
                     )
 
+        # Cache the customer email before update for the task
+        customer_email = order.user.email
+        customer_name = order.user.full_name
+
         order = await self.order_repo.update(order, status=data.status)
-        return OrderResponse.model_validate(order)
+        response = OrderResponse.model_validate(order)
+
+        # ── Background task ───────────────────────────────────────────────────
+        from app.tasks.email_tasks import send_order_status_update
+
+        send_order_status_update.delay(
+            order_id=order_id,
+            user_email=customer_email,
+            user_name=customer_name,
+            new_status=data.status,
+        )
+        # ─────────────────────────────────────────────────────────────────────
+
+        return response
 
     async def cancel_order(self, order_id: int, user: User) -> OrderResponse:
         """Cancel own order (customer) — only if still pending."""
