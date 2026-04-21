@@ -5,6 +5,7 @@ Loads values from .env file with type validation.
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +25,16 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/physioshop"
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_async_db_url(cls, v: str) -> str:
+        # Railway gives postgres:// or postgresql:// — replace with asyncpg driver
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+asyncpg://", 1)
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
