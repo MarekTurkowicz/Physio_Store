@@ -36,15 +36,25 @@ async def lifespan(app: FastAPI):
     Args:
         app (FastAPI): The physical FastAPI application instance.
     """
-    # Startup: create tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Startup: try to create tables, but don't fail if DB is unavailable
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print(f"✓ Database connected and tables created")
+    except Exception as e:
+        print(f"⚠️  Database connection failed: {e}")
+        print(f"ℹ️  Application will continue, but DB operations may fail")
+        print(f"ℹ️  Make sure DATABASE_URL environment variable is set correctly")
+
     print(f"🏥 {settings.APP_NAME} v{settings.APP_VERSION} started!")
 
     yield
 
     # Shutdown: dispose engine
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
     print(f"👋 {settings.APP_NAME} stopped.")
 
 

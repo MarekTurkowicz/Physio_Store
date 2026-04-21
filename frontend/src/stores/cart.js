@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 /**
  * Pinia store for managing the shopping cart state.
@@ -7,7 +7,12 @@ import { ref, computed } from 'vue'
  */
 export const useCartStore = defineStore('cart', () => {
   /** @type {import('vue').Ref<Array<{id: number, name: string, price: number, image: string, category: string, quantity: number}>>} */
-  const items = ref([])
+  const items = ref(JSON.parse(localStorage.getItem('physio_cart') || '[]'))
+  
+  // Zapis do localStorage po każdej zmianie w koszyku
+  watch(items, (newItems) => {
+    localStorage.setItem('physio_cart', JSON.stringify(newItems))
+  }, { deep: true })
   
   /** @type {import('vue').Ref<boolean>} Is the cart drawer currently open? */
   const isOpen = ref(false)
@@ -41,7 +46,7 @@ export const useCartStore = defineStore('cart', () => {
       items.value.push({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: Number(product.price) || 0,
         image: product.image,
         category: product.category,
         quantity

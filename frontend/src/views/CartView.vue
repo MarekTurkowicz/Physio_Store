@@ -20,7 +20,7 @@
               <h3 class="item-name">{{ item.name }}</h3>
               <p class="item-meta">Model: 2026 Pro</p>
             </div>
-            <div class="item-price">{{ item.price.toFixed(2) }} PLN</div>
+            <div class="item-price">{{ (Number(item.price) || 0).toFixed(2) }} PLN</div>
             <div class="item-qty">
               <InputNumber
                 v-model="item.quantity"
