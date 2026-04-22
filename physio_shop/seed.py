@@ -7,6 +7,8 @@ import asyncio
 import sys
 from decimal import Decimal
 
+from sqlalchemy import select
+
 from app.core.security import hash_password
 from app.database import async_session_factory, engine
 from app.models import Base, Category, Order, OrderItem, Product, User
@@ -247,83 +249,64 @@ USERS = [
 
 
 async def seed():
-    """Populate the database with initial data."""
-    # Create tables
+    """Populate the database with initial data — skips existing records."""
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with async_session_factory() as session:
-        # Create users
-        print("👤 Tworzenie użytkowników...")
-        db_users = []
+        # Users
+        print("👤 Sprawdzanie użytkowników...")
+        added_users = 0
         for user_data in USERS:
-            user = User(
-                email=user_data["email"],
-                hashed_password=hash_password(user_data["password"]),
-                full_name=user_data["full_name"],
-                role=user_data["role"],
+            existing = await session.execute(
+                select(User).where(User.email == user_data["email"])
             )
-            session.add(user)
-            db_users.append(user)
-
+            if existing.scalar_one_or_none() is None:
+                session.add(User(
+                    email=user_data["email"],
+                    hashed_password=hash_password(user_data["password"]),
+                    full_name=user_data["full_name"],
+                    role=user_data["role"],
+                ))
+                added_users += 1
         await session.flush()
-        print(f"   ✅ Utworzono {len(db_users)} użytkowników")
+        print(f"   ✅ Dodano {added_users} nowych użytkowników (pominięto {len(USERS) - added_users})")
 
-        # Create categories
-        print("📁 Tworzenie kategorii...")
-        db_categories = []
-        for cat_data in CATEGORIES:
-            category = Category(**cat_data)
-            session.add(category)
-            db_categories.append(category)
+        # Categories
+        print("📁 Sprawdzanie kategorii...")
+        added_cats = 0
+        db_categories: dict[int, Category] = {}
+        for idx, cat_data in enumerate(CATEGORIES):
+            result = await session.execute(select(Category).where(Category.slug == cat_data["slug"]))
+            cat = result.scalar_one_or_none()
+            if cat is None:
+                cat = Category(**cat_data)
+                session.add(cat)
+                await session.flush()
+                added_cats += 1
+            db_categories[idx] = cat
+        print(f"   ✅ Dodano {added_cats} nowych kategorii (pominięto {len(CATEGORIES) - added_cats})")
 
-        await session.flush()
-        print(f"   ✅ Utworzono {len(db_categories)} kategorii")
-
-        # Create products
-        print("📦 Tworzenie produktów...")
-        db_products = []
+        # Products
+        print("📦 Sprawdzanie produktów...")
+        added_prods = 0
         for prod_data in PRODUCTS:
-            category = db_categories[prod_data["category_idx"]]
-            product = Product(
-                name=prod_data["name"],
-                description=prod_data["description"],
-                price=prod_data["price"],
-                stock_quantity=prod_data["stock_quantity"],
-                sku=prod_data["sku"],
-                category_id=category.id,
-                is_active=True,
-            )
-            session.add(product)
-            db_products.append(product)
-
-        await session.flush()
-        print(f"   ✅ Utworzono {len(db_products)} produktów")
-
-        # Create sample orders
-        print("🛒 Tworzenie przykładowych zamówień...")
-        customer = db_users[1]  # Jan Kowalski
-
-        order = Order(
-            user_id=customer.id,
-            status="confirmed",
-            total_amount=Decimal("174.89"),
-            shipping_address="ul. Fizjoterapeutyczna 12/3, 00-001 Warszawa",
-        )
-        session.add(order)
-        await session.flush()
-
-        order_items = [
-            OrderItem(order_id=order.id, product_id=db_products[0].id, quantity=1, unit_price=db_products[0].price),
-            OrderItem(order_id=order.id, product_id=db_products[4].id, quantity=2, unit_price=db_products[4].price),
-            OrderItem(order_id=order.id, product_id=db_products[16].id, quantity=1, unit_price=db_products[16].price),
-        ]
-        for item in order_items:
-            session.add(item)
+            result = await session.execute(select(Product).where(Product.sku == prod_data["sku"]))
+            if result.scalar_one_or_none() is None:
+                category = db_categories[prod_data["category_idx"]]
+                session.add(Product(
+                    name=prod_data["name"],
+                    description=prod_data["description"],
+                    price=prod_data["price"],
+                    stock_quantity=prod_data["stock_quantity"],
+                    sku=prod_data["sku"],
+                    category_id=category.id,
+                    is_active=True,
+                ))
+                added_prods += 1
 
         await session.commit()
-        print("   ✅ Utworzono 1 przykładowe zamówienie")
+        print(f"   ✅ Dodano {added_prods} nowych produktów (pominięto {len(PRODUCTS) - added_prods})")
 
     print()
     print("=" * 50)
@@ -331,10 +314,10 @@ async def seed():
     print("=" * 50)
     print()
     print("Dane logowania:")
-    print(f"  Admin:       admin@physioshop.pl / admin123")
-    print(f"  Zarządca:    manager@physioshop.pl / manager123")
-    print(f"  Klient 1:    jan.kowalski@example.com / customer123")
-    print(f"  Klient 2:    anna.nowak@example.com / customer123")
+    print("  Admin:       admin@physioshop.pl / admin123")
+    print("  Zarządca:    manager@physioshop.pl / manager123")
+    print("  Klient 1:    jan.kowalski@example.com / customer123")
+    print("  Klient 2:    anna.nowak@example.com / customer123")
     print()
 
 

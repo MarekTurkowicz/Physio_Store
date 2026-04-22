@@ -181,20 +181,33 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   top: var(--banner-height, 0px); left: 0; right: 0;
   z-index: 1000;
   height: 86px;
+  border-bottom: 1px solid transparent;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* backdrop-filter on pseudo-element to avoid creating a containing block
+   for position:fixed children (PrimeVue overlay positioning bug) */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: rgba(7, 17, 31, 0.3);
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
-  border-bottom: 1px solid transparent;
   transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .header.scrolled {
   height: 72px;
+  border-bottom-color: rgba(148, 163, 184, 0.08);
+  box-shadow: 0 8px 32px -8px rgba(0,0,0,.4);
+}
+
+.header.scrolled::before {
   background: rgba(7, 17, 31, 0.92);
   backdrop-filter: blur(28px) saturate(1.6);
   -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  border-bottom-color: rgba(148, 163, 184, 0.08);
-  box-shadow: 0 8px 32px -8px rgba(0,0,0,.4);
 }
 
 .header-inner {

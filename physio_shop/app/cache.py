@@ -19,7 +19,14 @@ settings = get_settings()
 
 def get_redis_client() -> redis.Redis:
     """Create a new Redis client instance."""
-    return redis.from_url(settings.REDIS_URL, decode_responses=True)
+    return redis.from_url(
+        settings.REDIS_URL,
+        decode_responses=True,
+        socket_connect_timeout=2,
+        socket_timeout=2,
+        retry_on_timeout=False,
+        health_check_interval=30,
+    )
 
 
 redis_client: redis.Redis = get_redis_client()
