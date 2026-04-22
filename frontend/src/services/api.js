@@ -1,6 +1,10 @@
-const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1`
+// When VITE_API_URL is not set we skip network calls entirely (no ERR_CONNECTION_REFUSED)
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : null
 
 async function request(endpoint, options = {}) {
+  if (!BASE_URL) throw new Error('No backend configured')
   const url = `${BASE_URL}${endpoint}`
   const headers = {
     'Content-Type': 'application/json',
@@ -18,10 +22,25 @@ async function request(endpoint, options = {}) {
   })
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`
+    try {
+      const errorBody = await response.json()
+      if (Array.isArray(errorBody?.detail)) {
+        // FastAPI 422 validation error: detail is [{loc, msg, type}, ...]
+        errorMessage = errorBody.detail.map(e => e.msg).join(', ')
+      } else if (typeof errorBody?.detail === 'string') {
+        errorMessage = errorBody.detail
+      } else if (errorBody?.message) {
+        errorMessage = errorBody.message
+      }
+    } catch {
+      // response body is not JSON — keep the HTTP status message
+    }
+    throw new Error(errorMessage)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 export const api = {

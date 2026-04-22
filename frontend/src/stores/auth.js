@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
       else if (isManager.value) router.push('/manager')
       else router.push('/dashboard')
     } catch (e) {
-      error.value = 'Nieprawidłowy e-mail lub hasło.'
+      error.value = e.message || 'Nieprawidłowy e-mail lub hasło.'
       clearSession()
     } finally {
       loading.value = false
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
       await api.register(data)
       await login(data.email, data.password)
     } catch (e) {
-      error.value = 'Błąd rejestracji. Upewnij się, że podane dane są prawidłowe.'
+      error.value = e.message || 'Błąd rejestracji. Upewnij się, że podane dane są prawidłowe.'
     } finally {
       loading.value = false
     }
