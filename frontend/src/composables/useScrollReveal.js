@@ -18,21 +18,18 @@ export function useScrollReveal(rootRef) {
           if (entry.isIntersecting) {
             const el = entry.target
             const delay = parseInt(el.dataset.revealDelay || '0', 10)
-            
             if (delay > 0) {
               setTimeout(() => el.classList.add('is-visible'), delay)
             } else {
               el.classList.add('is-visible')
             }
-            
-            // Once revealed, stop observing
             observer.unobserve(el)
           }
         })
       },
       {
-        threshold: 0.12,
-        rootMargin: '0px 0px -60px 0px'
+        threshold: 0.08,
+        rootMargin: '0px 0px -20px 0px'
       }
     )
 

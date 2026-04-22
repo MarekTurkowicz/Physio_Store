@@ -127,4 +127,12 @@ const handleLogin = async () => {
 .link-bold {
   font-weight: 700;
 }
+
+:deep(.p-password) {
+  width: 100%;
+}
+
+:deep(.p-password-input) {
+  width: 100%;
+}
 </style>

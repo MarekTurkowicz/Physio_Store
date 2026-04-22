@@ -12,6 +12,7 @@ import router from './router'
 import { useAuthStore } from './stores/auth'
 
 import 'primeicons/primeicons.css'
+import 'flag-icons/css/flag-icons.min.css'
 import './assets/main.css'
 import i18n from './i18n'
 

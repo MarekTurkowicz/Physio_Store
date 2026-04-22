@@ -74,4 +74,9 @@ const handleRegister = async () => {
 .divider-text { color: #8aa0b8; }
 .auth-footer { text-align: center; font-size: 0.9rem; color: #bfd0e4; }
 .link-bold { font-weight: 700; }
+:deep(.p-password) { width: 100%; }
+:deep(.p-password-input) { width: 100%; }
+:deep(.p-password-meter-container) { padding: 6px 0 2px; }
+:deep(.p-password-meter) { height: 4px; }
+:deep(.p-password-meter-label) { font-size: 0.7rem; margin-top: 2px; }
 </style>

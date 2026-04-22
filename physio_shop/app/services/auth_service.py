@@ -41,12 +41,15 @@ class AuthService:
             role="customer",
         )
 
-        # Fire-and-forget welcome email
-        from app.tasks.email_tasks import send_welcome_email
-        send_welcome_email.delay(
-            user_email=user.email,
-            user_name=user.full_name,
-        )
+        # Fire-and-forget welcome email (best-effort — don't fail registration if broker is down)
+        try:
+            from app.tasks.email_tasks import send_welcome_email
+            send_welcome_email.delay(
+                user_email=user.email,
+                user_name=user.full_name,
+            )
+        except Exception:
+            pass
 
         return UserResponse.model_validate(user)
 
