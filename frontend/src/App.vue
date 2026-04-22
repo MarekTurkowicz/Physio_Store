@@ -10,6 +10,7 @@
       </router-view>
     </main>
     <AppFooter />
+    <CartNotification />
     <Toast position="bottom-right" />
   </div>
 </template>
@@ -20,6 +21,7 @@ import Toast from 'primevue/toast'
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import PromoBanner from './components/PromoBanner.vue'
+import CartNotification from './components/CartNotification.vue'
 import { useAuthStore } from './stores/auth'
 
 const authStore = useAuthStore()

@@ -182,5 +182,54 @@ const addToCart = () => {
   flex: 1;
 }
 
-.add-btn { margin-top: auto; width: 100%; }
+.add-btn {
+  margin-top: auto;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .product-card {
+    flex-direction: row;
+    min-height: 130px;
+  }
+
+  .product-media {
+    width: 110px;
+    flex-shrink: 0;
+    aspect-ratio: unset;
+    align-self: stretch;
+  }
+
+  .media-overlay {
+    top: 8px;
+    right: 8px;
+  }
+
+  .product-body {
+    padding: 12px 14px;
+    gap: 4px;
+  }
+
+  .product-name {
+    font-size: 0.88rem;
+    line-height: 1.3;
+  }
+
+  .price-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .price-val {
+    font-size: 0.95rem;
+  }
+
+  .product-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.78rem;
+  }
+}
 </style>

@@ -8,14 +8,16 @@ import { ref, computed, watch } from 'vue'
 export const useCartStore = defineStore('cart', () => {
   /** @type {import('vue').Ref<Array<{id: number, name: string, price: number, image: string, category: string, quantity: number}>>} */
   const items = ref(JSON.parse(localStorage.getItem('physio_cart') || '[]'))
-  
-  // Zapis do localStorage po każdej zmianie w koszyku
+
   watch(items, (newItems) => {
     localStorage.setItem('physio_cart', JSON.stringify(newItems))
   }, { deep: true })
-  
-  /** @type {import('vue').Ref<boolean>} Is the cart drawer currently open? */
+
   const isOpen = ref(false)
+
+  /** Last item added — shown in CartNotification, cleared after 4s */
+  const lastAddedItem = ref(null)
+  let _notifTimer = null
 
   /**
    * Computed property for the total number of items in the cart.
@@ -53,9 +55,14 @@ export const useCartStore = defineStore('cart', () => {
       })
     }
 
-    // Briefly show the cart to provide visual feedback to the user
-    isOpen.value = true
-    setTimeout(() => { isOpen.value = false }, 2000)
+    lastAddedItem.value = { id: product.id, name: product.name, price: Number(product.price) || 0, image: product.image, quantity }
+    if (_notifTimer) clearTimeout(_notifTimer)
+    _notifTimer = setTimeout(() => { lastAddedItem.value = null }, 4000)
+  }
+
+  function dismissNotification() {
+    if (_notifTimer) clearTimeout(_notifTimer)
+    lastAddedItem.value = null
   }
 
   /**
@@ -92,11 +99,13 @@ export const useCartStore = defineStore('cart', () => {
   return {
     items,
     isOpen,
+    lastAddedItem,
     totalItems,
     totalPrice,
     addItem,
     removeItem,
     updateQuantity,
-    clearCart
+    clearCart,
+    dismissNotification
   }
 })

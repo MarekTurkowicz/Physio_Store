@@ -10,7 +10,7 @@
 
     <div class="store-layout">
       <!-- Sidebar Filters -->
-      <aside class="store-sidebar glass-heavy">
+      <aside class="store-sidebar glass-heavy" :class="{ 'sidebar-open': filtersOpen }">
         <div class="sidebar-section">
           <h3 class="sidebar-title">Wyszukiwanie</h3>
           <IconField>
@@ -42,6 +42,10 @@
       <div class="store-main">
         <!-- Top Utility Bar -->
         <div class="utility-bar glass">
+          <button class="filter-toggle-btn" @click="filtersOpen = !filtersOpen">
+            <i class="pi pi-filter"></i>
+            <span>{{ filtersOpen ? 'Ukryj filtry' : 'Filtry' }}</span>
+          </button>
           <div class="results-info">
             <span v-if="!loading && totalRecords > 0">
               Wyświetlanie {{ Math.min(first + 1, totalRecords) }} - {{ Math.min(first + rows, totalRecords) }} z {{ totalRecords }} produktów
@@ -115,6 +119,7 @@ const { t } = useI18n()
 // Pagination logic
 const first = ref(0)
 const rows = ref(10)
+const filtersOpen = ref(false)
 
 const loading = computed(() => productStore.loading)
 const categories = computed(() => {
@@ -315,13 +320,39 @@ onMounted(() => {
   margin: 8px 0 24px;
 }
 
+.filter-toggle-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20, 184, 166, 0.1);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  color: #5eead4;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.filter-toggle-btn:hover {
+  background: rgba(20, 184, 166, 0.18);
+}
+
 @media (max-width: 992px) {
   .store-layout {
     grid-template-columns: 1fr;
   }
   .store-sidebar {
+    display: none;
     position: static;
-    margin-bottom: 24px;
+    margin-bottom: 0;
+  }
+  .store-sidebar.sidebar-open {
+    display: block;
+    margin-bottom: 20px;
+  }
+  .filter-toggle-btn {
+    display: flex;
   }
 }
 </style>
