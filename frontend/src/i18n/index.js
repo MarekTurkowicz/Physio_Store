@@ -6,11 +6,11 @@ import es from './locales/es.json'
 import fr from './locales/fr.json'
 
 export const SUPPORTED_LOCALES = [
-  { code: 'pl', label: 'Polski', flag: '🇵🇱' },
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' }
+  { code: 'pl', label: 'Polski',   countryCode: 'pl' },
+  { code: 'en', label: 'English',  countryCode: 'us' },
+  { code: 'de', label: 'Deutsch',  countryCode: 'de' },
+  { code: 'es', label: 'Español',  countryCode: 'es' },
+  { code: 'fr', label: 'Français', countryCode: 'fr' },
 ]
 
 const i18n = createI18n({
