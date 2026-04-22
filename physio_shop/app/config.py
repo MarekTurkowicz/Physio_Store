@@ -3,10 +3,12 @@ Application configuration using Pydantic Settings.
 Loads values from .env file with type validation.
 """
 
+import json
 from functools import lru_cache
+from typing import Annotated, List
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -22,6 +24,8 @@ class Settings(BaseSettings):
     APP_NAME: str = "PhysioShop"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
+    ALLOWED_ORIGINS: Annotated[List[str], NoDecode] = []
+    ALLOWED_ORIGIN_REGEX: str | None = None
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/physioshop"
@@ -29,11 +33,24 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def fix_async_db_url(cls, v: str) -> str:
-        # Railway gives postgres:// or postgresql:// — replace with asyncpg driver
         if v.startswith("postgres://"):
             return v.replace("postgres://", "postgresql+asyncpg://", 1)
-        if v.startswith("postgresql://"):
+        if v.startswith("postgresql://") and "+asyncpg" not in v:
             return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if v is None or v == "":
+            return []
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("["):
+                return json.loads(stripped)
+            return [origin.strip() for origin in stripped.split(",") if origin.strip()]
         return v
 
     # Redis
